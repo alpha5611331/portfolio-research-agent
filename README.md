@@ -2,10 +2,19 @@
 
 ## Elevator Pitch
 
-A full-stack web application where a user submits a research question and a multi-agent system autonomously plans, searches, retrieves, summarizes, and synthesizes a structured report — with every agent step streamed live to a unique terminal-meets-dashboard UI.
+A full-stack web application where a user submits a research question and a multi-agent system autonomously plans, searches, retrieves, summarizes, and synthesizes a structured report - with every agent step streamed live to a unique terminal-meets-dashboard UI.
 
 **Demo query:**
 > "What is the future of AI agents in healthcare?"
+
+---
+
+## Repositories
+
+| | Link |
+|---|---|
+| Backend | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend) |
+| Frontend | [portfolio-research-agent-frontend](https://github.com/alpha5611331/portfolio-research-agent-frontend) |
 
 ---
 
@@ -18,7 +27,7 @@ This project is designed to demonstrate the following skills simultaneously:
 | Agentic AI | LangGraph StateGraph, multi-agent orchestration, tool use, RAG, streaming events |
 | Backend | FastAPI, async Python, WebSocket streaming, REST API design |
 | Frontend | Next.js 14 App Router, TypeScript, real-time UI, state management |
-| Vector DB | Qdrant — embedding, upsert, semantic search |
+| Vector DB | Qdrant - embedding, upsert, semantic search |
 | LLM integration | OpenAI SDK-compatible (OpenAI + Groq), prompt engineering, streaming |
 | Search | Tavily API (free tier), result ranking and deduplication |
 | UI/UX | Unique dark command-center design, live agent trace visualization |
@@ -71,16 +80,16 @@ User Query
 
 ---
 
-## Agentic Framework — LangGraph
+## Agentic Framework - LangGraph
 
 The entire agent pipeline is a **LangGraph `StateGraph`**. Each agent is a typed node; edges and conditional routing define execution order. This makes the pipeline inspectable, serializable, and easy to extend without touching orchestration logic.
 
 ### Why LangGraph
 
-- **Explicit graph topology** — the planner → researchers → summarizer → synthesizer flow is declared as nodes and edges, not implicit function calls; the graph is the architecture
-- **Native parallel fan-out** — LangGraph's `Send` API dynamically spawns one Researcher node per subtopic; results are merged back into shared state automatically via a reducer
-- **Built-in streaming** — `.astream_events()` emits granular events for every node entry, node exit, and LLM token; the FastAPI WebSocket handler maps these directly to the frontend event schema with no manual event management
-- **State as single source of truth** — a typed `ResearchState` dict flows through the graph carrying query, provider, model, subtopics, sources, summaries, and final report; no hidden side-channels
+- **Explicit graph topology** - the planner → researchers → summarizer → synthesizer flow is declared as nodes and edges, not implicit function calls; the graph is the architecture
+- **Native parallel fan-out** - LangGraph's `Send` API dynamically spawns one Researcher node per subtopic; results are merged back into shared state automatically via a reducer
+- **Built-in streaming** - `.astream_events()` emits granular events for every node entry, node exit, and LLM token; the FastAPI WebSocket handler maps these directly to the frontend event schema with no manual event management
+- **State as single source of truth** - a typed `ResearchState` dict flows through the graph carrying query, provider, model, subtopics, sources, summaries, and final report; no hidden side-channels
 
 ### Graph Topology
 
@@ -95,12 +104,12 @@ START → planner → [Send × N subtopics] → researcher (×N, parallel)
 ### Tools (used inside Researcher node)
 
 Each Researcher node binds two LangChain tools to its LLM and runs a tool-calling loop until sources are collected:
-- `tavily_search` — web search via Tavily API
-- `qdrant_rag` — semantic retrieval from Qdrant over past research sessions
+- `tavily_search` - web search via Tavily API
+- `qdrant_rag` - semantic retrieval from Qdrant over past research sessions
 
 ### LLM Inside Nodes
 
-Every node reads `provider` and `model` from the shared state and constructs a `ChatOpenAI` client (from `langchain-openai`) on the fly. For Groq, the same class is used with `base_url` pointed at Groq's OpenAI-compatible endpoint — no separate code path for each provider.
+Every node reads `provider` and `model` from the shared state and constructs a `ChatOpenAI` client (from `langchain-openai`) on the fly. For Groq, the same class is used with `base_url` pointed at Groq's OpenAI-compatible endpoint - no separate code path for each provider.
 
 ### Streaming to Frontend
 
@@ -108,7 +117,7 @@ LangGraph's `.astream_events()` output is consumed by the FastAPI WebSocket hand
 
 ---
 
-## Backend — FastAPI (Python)
+## Backend - FastAPI (Python)
 
 ### Agent Pipeline
 
@@ -140,7 +149,7 @@ Four LangGraph nodes run in sequence; Researcher nodes fan out in parallel via `
 
 ### LLM Configuration
 
-Uses **OpenAI Python SDK** — compatible with both providers:
+Uses **OpenAI Python SDK** - compatible with both providers:
 
 ```python
 # OpenAI
@@ -197,9 +206,9 @@ Every WebSocket message is a typed JSON event:
 
 - Python 3.11+
 - FastAPI + Uvicorn
-- LangGraph — agent graph definition, parallel `Send`, state management, `.astream_events()` streaming
-- `langchain-openai` — `ChatOpenAI` wrapping OpenAI SDK; Groq via `base_url` override
-- `langchain-core` — `@tool` decorator for Tavily and Qdrant tools
+- LangGraph - agent graph definition, parallel `Send`, state management, `.astream_events()` streaming
+- `langchain-openai` - `ChatOpenAI` wrapping OpenAI SDK; Groq via `base_url` override
+- `langchain-core` - `@tool` decorator for Tavily and Qdrant tools
 - `tavily-python` client
 - `qdrant-client`
 - Pydantic v2 for request/response schemas
@@ -207,7 +216,7 @@ Every WebSocket message is a typed JSON event:
 
 ---
 
-## Frontend — Next.js 14
+## Frontend - Next.js 14
 
 ### Design Language: "Research Command Center"
 
@@ -254,7 +263,7 @@ Every WebSocket message is a typed JSON event:
 │  [Copy] [Export MD] [New Research]                              │
 ├─────────────────────────────────────────────────────────────────┤
 │  SESSION HISTORY (collapsible bottom drawer)                    │
-│  Past queries with timestamps — click to reload                 │
+│  Past queries with timestamps - click to reload                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -299,7 +308,7 @@ Every WebSocket message is a typed JSON event:
 ## Qdrant Setup (WSL)
 
 ```bash
-# Already installed on WSL — start with:
+# Already installed on WSL - start with:
 docker run -p 6333:6333 qdrant/qdrant
 
 # Collection created on first run by backend init script:
@@ -383,17 +392,17 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 
 ## Scope Notes
 
-- **No authentication** — this is a portfolio demo; any user can submit a query and view past sessions. No login, no user isolation.
+- **No authentication** - this is a portfolio demo; any user can submit a query and view past sessions. No login, no user isolation.
 
 ---
 
 ## Why This Is Strong as a Portfolio Project
 
-1. **Real agentic framework** — uses LangGraph `StateGraph` with typed state, conditional fan-out via `Send`, and built-in streaming; not a hand-rolled loop or "LangGraph-style" approximation
-2. **Multi-agent system** — planner → parallel researchers → summarizer → synthesizer; each is a discrete node with a single responsibility
-3. **Real full-stack** — async FastAPI backend, React frontend, WebSocket streaming, vector DB, external APIs
-4. **Provider flexibility** — `ChatOpenAI` from `langchain-openai` used as a universal interface; Groq swapped in via `base_url` with zero extra code
-5. **Live observability** — LangGraph's `.astream_events()` feeds every node transition and LLM token to the UI in real time; nothing hidden
-6. **RAG with Qdrant** — past research sessions indexed as vectors and retrieved to augment new queries
-7. **Unique UI** — command-center design, not a generic chat template; shows frontend design skill alongside AI skill
-8. **Free-tier viable** — Tavily free tier + Groq free tier means it runs at zero cost for demos
+1. **Real agentic framework** - uses LangGraph `StateGraph` with typed state, conditional fan-out via `Send`, and built-in streaming; not a hand-rolled loop or "LangGraph-style" approximation
+2. **Multi-agent system** - planner → parallel researchers → summarizer → synthesizer; each is a discrete node with a single responsibility
+3. **Real full-stack** - async FastAPI backend, React frontend, WebSocket streaming, vector DB, external APIs
+4. **Provider flexibility** - `ChatOpenAI` from `langchain-openai` used as a universal interface; Groq swapped in via `base_url` with zero extra code
+5. **Live observability** - LangGraph's `.astream_events()` feeds every node transition and LLM token to the UI in real time; nothing hidden
+6. **RAG with Qdrant** - past research sessions indexed as vectors and retrieved to augment new queries
+7. **Unique UI** - command-center design, not a generic chat template; shows frontend design skill alongside AI skill
+8. **Free-tier viable** - Tavily free tier + Groq free tier means it runs at zero cost for demos
