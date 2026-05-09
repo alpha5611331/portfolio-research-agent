@@ -16,9 +16,9 @@ A full-stack web application where a user submits a research question and a mult
 
 |             | Link                                                                                                |
 | ----------- | --------------------------------------------------------------------------------------------------- |
-| Main (this) | [portfolio-research-agent](https://github.com/alpha5611331/portfolio-research-agent)                   |
-| Backend     | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend)   |
-| Frontend    | [portfolio-research-agent-frontend](https://github.com/alpha5611331/portfolio-research-agent-frontend) |
+| Main (this) | [portfolio-research-agent](https://github.com/vectorleap-pulseportfolio-research-agent)                   |
+| Backend     | [portfolio-research-agent-backend](https://github.com/vectorleap-pulseportfolio-research-agent-backend)   |
+| Frontend    | [portfolio-research-agent-frontend](https://github.com/vectorleap-pulseportfolio-research-agent-frontend) |
 
 ---
 
