@@ -12,10 +12,11 @@ A full-stack web application where a user submits a research question and a mult
 
 ## Repositories
 
-|          | Link                                                                                                |
-| -------- | --------------------------------------------------------------------------------------------------- |
-| Backend  | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend)   |
-| Frontend | [portfolio-research-agent-frontend](https://github.com/alpha5611331/portfolio-research-agent-frontend) |
+|              | Link                                                                                                      |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| Main (this)  | [portfolio-research-agent](https://github.com/alpha5611331/portfolio-research-agent)                      |
+| Backend      | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend)      |
+| Frontend     | [portfolio-research-agent-frontend](https://github.com/alpha5611331/portfolio-research-agent-frontend)    |
 
 ---
 
