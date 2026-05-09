@@ -25,10 +25,9 @@ This project is designed to demonstrate the following skills simultaneously:
 
 | Domain          | Skills Demonstrated                                                              |
 | --------------- | -------------------------------------------------------------------------------- |
-| Agentic AI      | LangGraph StateGraph, multi-agent orchestration, tool use, RAG, streaming events |
+| Agentic AI      | LangGraph StateGraph, multi-agent orchestration, tool use, streaming events      |
 | Backend         | FastAPI, async Python, WebSocket streaming, REST API design                      |
 | Frontend        | Next.js 14 App Router, TypeScript, real-time UI, state management                |
-| Vector DB       | Qdrant - embedding, upsert, semantic search                                      |
 | LLM integration | OpenAI SDK-compatible (OpenAI + Groq), prompt engineering, streaming             |
 | Search          | Tavily API (free tier), result ranking and deduplication                         |
 | UI/UX           | Unique dark command-center design, live agent trace visualization                |
@@ -61,7 +60,6 @@ User Query
                                            │  │   subtopic)        │  │
                                            │  │  ┌──────────────┐  │  │
                                            │  │  │ Tavily Search│  │  │
-                                           │  │  │ Qdrant RAG   │  │  │
                                            │  │  └──────────────┘  │  │
                                            │  └────────┬───────────┘  │
                                            │           │              │
@@ -74,7 +72,6 @@ User Query
                                            │  │ (final report)     │  │
                                            │  └────────────────────┘  │
                                            │                          │
-                                           │  Qdrant (WSL)            │
                                            │  OpenAI / Groq SDK       │
                                            └──────────────────────────┘
 ```
@@ -104,10 +101,9 @@ START → planner → [Send × N subtopics] → researcher (×N, parallel)
 
 ### Tools (used inside Researcher node)
 
-Each Researcher node binds two LangChain tools to its LLM and runs a tool-calling loop until sources are collected:
+Each Researcher node binds a LangChain tool to its LLM and runs a tool-calling loop until sources are collected:
 
 - `tavily_search` - web search via Tavily API
-- `qdrant_rag` - semantic retrieval from Qdrant over past research sessions
 
 ### LLM Inside Nodes
 
@@ -135,9 +131,8 @@ Four LangGraph nodes run in sequence; Researcher nodes fan out in parallel via `
 #### 2. Researcher Agent (parallel, one per subtopic)
 
 - **Tavily web search**: fetches top 5 results per subtopic (free tier)
-- **Qdrant RAG lookup**: semantic search against previously indexed research sessions
-- Deduplicates results by URL and embedding similarity
-- Emits `SEARCH_DONE`, `RAG_DONE`, `SOURCES_COLLECTED` events per subtopic
+- Deduplicates results by URL
+- Emits `SEARCH_DONE`, `SOURCES_COLLECTED` events per subtopic
 
 #### 3. Summarizer Agent
 
@@ -150,7 +145,6 @@ Four LangGraph nodes run in sequence; Researcher nodes fan out in parallel via `
 - Merges all subtopic summaries into a final structured report
 - Sections: Executive Summary, Key Findings, Detailed Analysis, Citations
 - Streams final report tokens to frontend
-- Stores final report embeddings in Qdrant for future RAG
 - Emits `REPORT_CHUNK` (streaming) and `REPORT_DONE` events
 
 ### LLM Configuration
@@ -175,14 +169,6 @@ Supported models:
 - `gpt-4o-mini` / `gpt-4o` (OpenAI)
 - `llama-3.3-70b-versatile` / `llama-3.1-8b-instant` (Groq)
 
-### Qdrant Integration
-
-- Running locally in WSL at `localhost:6333`
-- Collection: `research_sessions`
-- Stores: query, subtopic summaries, final report chunks as vectors
-- Embedding model: `text-embedding-3-small` (OpenAI) or sentence-transformers fallback
-- Used by Researcher Agent for RAG on past sessions
-
 ### API Endpoints
 
 ```
@@ -200,7 +186,7 @@ Every WebSocket message is a typed JSON event:
 
 ```json
 {
-  "event": "PLAN_CREATED | SEARCH_DONE | RAG_DONE | SOURCES_COLLECTED | SUMMARY_CHUNK | SUMMARY_DONE | REPORT_CHUNK | REPORT_DONE | ERROR",
+  "event": "PLAN_CREATED | SEARCH_DONE | SOURCES_COLLECTED | SUMMARY_CHUNK | SUMMARY_DONE | REPORT_CHUNK | REPORT_DONE | ERROR",
   "session_id": "uuid",
   "timestamp": "ISO-8601",
   "agent": "planner | researcher | summarizer | synthesizer",
@@ -215,9 +201,8 @@ Every WebSocket message is a typed JSON event:
 - FastAPI + Uvicorn
 - LangGraph - agent graph definition, parallel `Send`, state management, `.astream_events()` streaming
 - `langchain-openai` - `ChatOpenAI` wrapping OpenAI SDK; Groq via `base_url` override
-- `langchain-core` - `@tool` decorator for Tavily and Qdrant tools
+- `langchain-core` - `@tool` decorator for Tavily tool
 - `tavily-python` client
-- `qdrant-client`
 - Pydantic v2 for request/response schemas
 - `python-dotenv`
 
@@ -262,7 +247,7 @@ Every WebSocket message is a typed JSON event:
 │  status:     │                          │  - relevance score    │
 │              │  ● PLAN_CREATED          │  - snippet            │
 │  ○ Planner   │  ● SEARCH: subtopic 1    │  - [open link]        │
-│  ├○ Research │  ● RAG: 3 hits found     │                       │
+│  ├○ Research │  ● SEARCH: subtopic 2    │                       │
 │  ├○ Research │  ● SUMMARY streaming...  │  Expandable per       │
 │  └○ Synthsz  │  ● REPORT streaming...   │  subtopic             │
 │              │                          │                       │
@@ -287,7 +272,7 @@ Every WebSocket message is a typed JSON event:
 | `SourcesPanel`     | Tabbed by subtopic, cards with favicon, domain badge, score bar            |
 | `ReportViewer`     | Streaming markdown renderer, serif font, section anchors, TOC              |
 | `SessionDrawer`    | Bottom slide-up list of past sessions from `/api/sessions`               |
-| `StatusBar`        | Footer: current agent, token count, latency, Qdrant hit count              |
+| `StatusBar`        | Footer: current agent, token count, latency                                |
 
 ### Real-time Streaming
 
@@ -314,22 +299,6 @@ Every WebSocket message is a typed JSON event:
 
 ---
 
-## Qdrant Setup (WSL)
-
-```bash
-# Already installed on WSL - start with:
-docker run -p 6333:6333 qdrant/qdrant
-
-# Collection created on first run by backend init script:
-# Collection: research_sessions
-# Vector size: 1536 (text-embedding-3-small)
-# Distance: Cosine
-```
-
-Backend connects to `http://localhost:6333` from Windows via WSL port forwarding.
-
----
-
 ## Environment Variables
 
 ```env
@@ -337,11 +306,8 @@ Backend connects to `http://localhost:6333` from Windows via WSL port forwarding
 OPENAI_API_KEY=sk-...
 GROQ_API_KEY=gsk_...
 TAVILY_API_KEY=tvly-...
-QDRANT_URL=http://localhost:6333
-QDRANT_COLLECTION=research_sessions
 DEFAULT_LLM_PROVIDER=openai
 DEFAULT_MODEL=gpt-4o-mini
-EMBEDDING_MODEL=text-embedding-3-small
 
 # Frontend (.env.local)
 NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -360,19 +326,15 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 │   ├── state.py                 # ResearchState TypedDict
 │   ├── agents/
 │   │   ├── planner.py           # LangGraph node: plan subtopics
-│   │   ├── researcher.py        # LangGraph node: tool-calling loop (Tavily + Qdrant)
+│   │   ├── researcher.py        # LangGraph node: tool-calling loop (Tavily)
 │   │   ├── summarizer.py        # LangGraph node: per-subtopic summary
-│   │   └── synthesizer.py       # LangGraph node: final report + Qdrant indexing
+│   │   └── synthesizer.py       # LangGraph node: final report
 │   ├── tools/
-│   │   ├── tavily_search.py     # @tool: Tavily web search
-│   │   └── qdrant_rag.py        # @tool: Qdrant semantic retrieval
+│   │   └── tavily_search.py     # @tool: Tavily web search
 │   ├── models/
 │   │   └── schemas.py           # Pydantic request/response models
 │   ├── services/
-│   │   ├── llm.py               # ChatOpenAI factory (OpenAI + Groq via base_url)
-│   │   └── embeddings.py
-│   ├── db/
-│   │   └── qdrant_client.py
+│   │   └── llm.py               # ChatOpenAI factory (OpenAI + Groq via base_url)
 │   └── requirements.txt
 ├── frontend/
 │   ├── app/
@@ -393,7 +355,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 │   ├── types/
 │   │   └── events.ts
 │   └── package.json
-├── docker-compose.yml           # Qdrant + backend + frontend
+├── docker-compose.yml           # backend + frontend
 └── workspace.md
 ```
 
@@ -409,9 +371,8 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 
 1. **Real agentic framework** - uses LangGraph `StateGraph` with typed state, conditional fan-out via `Send`, and built-in streaming; not a hand-rolled loop or "LangGraph-style" approximation
 2. **Multi-agent system** - planner → parallel researchers → summarizer → synthesizer; each is a discrete node with a single responsibility
-3. **Real full-stack** - async FastAPI backend, React frontend, WebSocket streaming, vector DB, external APIs
+3. **Real full-stack** - async FastAPI backend, React frontend, WebSocket streaming, external APIs
 4. **Provider flexibility** - `ChatOpenAI` from `langchain-openai` used as a universal interface; Groq swapped in via `base_url` with zero extra code
 5. **Live observability** - LangGraph's `.astream_events()` feeds every node transition and LLM token to the UI in real time; nothing hidden
-6. **RAG with Qdrant** - past research sessions indexed as vectors and retrieved to augment new queries
-7. **Unique UI** - command-center design, not a generic chat template; shows frontend design skill alongside AI skill
-8. **Free-tier viable** - Tavily free tier + Groq free tier means it runs at zero cost for demos
+6. **Unique UI** - command-center design, not a generic chat template; shows frontend design skill alongside AI skill
+7. **Free-tier viable** - Tavily free tier + Groq free tier means it runs at zero cost for demos
