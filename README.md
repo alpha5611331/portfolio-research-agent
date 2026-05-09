@@ -5,15 +5,16 @@
 A full-stack web application where a user submits a research question and a multi-agent system autonomously plans, searches, retrieves, summarizes, and synthesizes a structured report - with every agent step streamed live to a unique terminal-meets-dashboard UI.
 
 **Demo query:**
+
 > "What is the future of AI agents in healthcare?"
 
 ---
 
 ## Repositories
 
-| | Link |
-|---|---|
-| Backend | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend) |
+|          | Link                                                                                                |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| Backend  | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend)   |
 | Frontend | [portfolio-research-agent-frontend](https://github.com/alpha5611331/portfolio-research-agent-frontend) |
 
 ---
@@ -22,16 +23,16 @@ A full-stack web application where a user submits a research question and a mult
 
 This project is designed to demonstrate the following skills simultaneously:
 
-| Domain | Skills Demonstrated |
-|---|---|
-| Agentic AI | LangGraph StateGraph, multi-agent orchestration, tool use, RAG, streaming events |
-| Backend | FastAPI, async Python, WebSocket streaming, REST API design |
-| Frontend | Next.js 14 App Router, TypeScript, real-time UI, state management |
-| Vector DB | Qdrant - embedding, upsert, semantic search |
-| LLM integration | OpenAI SDK-compatible (OpenAI + Groq), prompt engineering, streaming |
-| Search | Tavily API (free tier), result ranking and deduplication |
-| UI/UX | Unique dark command-center design, live agent trace visualization |
-| DevOps | Docker Compose, environment config, `.env` management |
+| Domain          | Skills Demonstrated                                                              |
+| --------------- | -------------------------------------------------------------------------------- |
+| Agentic AI      | LangGraph StateGraph, multi-agent orchestration, tool use, RAG, streaming events |
+| Backend         | FastAPI, async Python, WebSocket streaming, REST API design                      |
+| Frontend        | Next.js 14 App Router, TypeScript, real-time UI, state management                |
+| Vector DB       | Qdrant - embedding, upsert, semantic search                                      |
+| LLM integration | OpenAI SDK-compatible (OpenAI + Groq), prompt engineering, streaming             |
+| Search          | Tavily API (free tier), result ranking and deduplication                         |
+| UI/UX           | Unique dark command-center design, live agent trace visualization                |
+| DevOps          | Docker Compose, environment config,`.env` management                           |
 
 ---
 
@@ -104,6 +105,7 @@ START → planner → [Send × N subtopics] → researcher (×N, parallel)
 ### Tools (used inside Researcher node)
 
 Each Researcher node binds two LangChain tools to its LLM and runs a tool-calling loop until sources are collected:
+
 - `tavily_search` - web search via Tavily API
 - `qdrant_rag` - semantic retrieval from Qdrant over past research sessions
 
@@ -124,23 +126,27 @@ LangGraph's `.astream_events()` output is consumed by the FastAPI WebSocket hand
 Four LangGraph nodes run in sequence; Researcher nodes fan out in parallel via `Send`.
 
 #### 1. Planner Agent
+
 - Input: raw user query
 - Output: list of 3–5 subtopics with search strategies
 - LLM call with structured output (JSON mode)
 - Emits `PLAN_CREATED` event
 
 #### 2. Researcher Agent (parallel, one per subtopic)
+
 - **Tavily web search**: fetches top 5 results per subtopic (free tier)
 - **Qdrant RAG lookup**: semantic search against previously indexed research sessions
 - Deduplicates results by URL and embedding similarity
 - Emits `SEARCH_DONE`, `RAG_DONE`, `SOURCES_COLLECTED` events per subtopic
 
 #### 3. Summarizer Agent
+
 - Summarizes each subtopic's collected sources into a concise section
 - Streams partial tokens to frontend
 - Emits `SUMMARY_CHUNK` (streaming) and `SUMMARY_DONE` events
 
 #### 4. Synthesizer Agent
+
 - Merges all subtopic summaries into a final structured report
 - Sections: Executive Summary, Key Findings, Detailed Analysis, Citations
 - Streams final report tokens to frontend
@@ -165,6 +171,7 @@ client = openai.AsyncOpenAI(
 User selects provider + model from the UI. Backend reads selection from request payload.
 
 Supported models:
+
 - `gpt-4o-mini` / `gpt-4o` (OpenAI)
 - `llama-3.3-70b-versatile` / `llama-3.1-8b-instant` (Groq)
 
@@ -221,11 +228,13 @@ Every WebSocket message is a typed JSON event:
 ### Design Language: "Research Command Center"
 
 **Not** a standard chat UI. Inspired by:
+
 - IDE terminals (VS Code, Warp)
 - Mission control dashboards
 - Hacker-aesthetic meets editorial
 
 **Visual identity:**
+
 - Dark base: `#0a0a0f` (near-black with blue undertone)
 - Accent: electric indigo `#6366f1` + cyan `#06b6d4`
 - Monospace font for log streams and agent traces (JetBrains Mono)
@@ -241,7 +250,7 @@ Every WebSocket message is a typed JSON event:
 │  HEADER: logo + provider selector (OpenAI / Groq) + model pick  │
 ├─────────────────────────────────────────────────────────────────┤
 │  COMMAND BAR: full-width query input (VS Code palette style)    │
-│               [Enter to Research ▶]                             │
+│               [Enter to Research >>]                            │
 ├──────────────┬──────────────────────────┬───────────────────────┤
 │              │                          │                       │
 │  AGENT TRACE │   LIVE LOG STREAM        │   SOURCES PANEL       │
@@ -252,10 +261,10 @@ Every WebSocket message is a typed JSON event:
 │  and their   │  event types             │  - domain badge       │
 │  status:     │                          │  - relevance score    │
 │              │  ● PLAN_CREATED          │  - snippet            │
-│  ○ Planner   │  ● SEARCH: subtopic 1   │  - [open link]        │
-│  ├○ Research │  ● RAG: 3 hits found    │                       │
-│  ├○ Research │  ● SUMMARY streaming... │  Expandable per       │
-│  └○ Synthsz  │  ● REPORT streaming...  │  subtopic             │
+│  ○ Planner   │  ● SEARCH: subtopic 1    │  - [open link]        │
+│  ├○ Research │  ● RAG: 3 hits found     │                       │
+│  ├○ Research │  ● SUMMARY streaming...  │  Expandable per       │
+│  └○ Synthsz  │  ● REPORT streaming...   │  subtopic             │
 │              │                          │                       │
 ├──────────────┴──────────────────────────┴───────────────────────┤
 │  REPORT PANEL (collapsible, expands below on REPORT_DONE)       │
@@ -269,16 +278,16 @@ Every WebSocket message is a typed JSON event:
 
 ### Component Breakdown
 
-| Component | Description |
-|---|---|
-| `CommandBar` | Full-width input with animated placeholder cycling through example queries |
-| `ProviderSelector` | Dropdown to pick OpenAI or Groq + model within each |
-| `AgentTraceTree` | Animated vertical tree, nodes pulse when active, checkmark on done |
-| `LogStream` | Auto-scrolling terminal-style log with color per event type |
-| `SourcesPanel` | Tabbed by subtopic, cards with favicon, domain badge, score bar |
-| `ReportViewer` | Streaming markdown renderer, serif font, section anchors, TOC |
-| `SessionDrawer` | Bottom slide-up list of past sessions from `/api/sessions` |
-| `StatusBar` | Footer: current agent, token count, latency, Qdrant hit count |
+| Component            | Description                                                                |
+| -------------------- | -------------------------------------------------------------------------- |
+| `CommandBar`       | Full-width input with animated placeholder cycling through example queries |
+| `ProviderSelector` | Dropdown to pick OpenAI or Groq + model within each                        |
+| `AgentTraceTree`   | Animated vertical tree, nodes pulse when active, checkmark on done         |
+| `LogStream`        | Auto-scrolling terminal-style log with color per event type                |
+| `SourcesPanel`     | Tabbed by subtopic, cards with favicon, domain badge, score bar            |
+| `ReportViewer`     | Streaming markdown renderer, serif font, section anchors, TOC              |
+| `SessionDrawer`    | Bottom slide-up list of past sessions from `/api/sessions`               |
+| `StatusBar`        | Footer: current agent, token count, latency, Qdrant hit count              |
 
 ### Real-time Streaming
 
