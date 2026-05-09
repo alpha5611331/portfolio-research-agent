@@ -4,6 +4,8 @@
 
 A full-stack web application where a user submits a research question and a multi-agent system autonomously plans, searches, retrieves, summarizes, and synthesizes a structured report - with every agent step streamed live to a unique terminal-meets-dashboard UI.
 
+![Demo](images/demo.gif)
+
 **Demo query:**
 
 > "What is the future of AI agents in healthcare?"
@@ -12,11 +14,11 @@ A full-stack web application where a user submits a research question and a mult
 
 ## Repositories
 
-|              | Link                                                                                                      |
-| ------------ | --------------------------------------------------------------------------------------------------------- |
-| Main (this)  | [portfolio-research-agent](https://github.com/alpha5611331/portfolio-research-agent)                      |
-| Backend      | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend)      |
-| Frontend     | [portfolio-research-agent-frontend](https://github.com/alpha5611331/portfolio-research-agent-frontend)    |
+|             | Link                                                                                                |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| Main (this) | [portfolio-research-agent](https://github.com/alpha5611331/portfolio-research-agent)                   |
+| Backend     | [portfolio-research-agent-backend](https://github.com/alpha5611331/portfolio-research-agent-backend)   |
+| Frontend    | [portfolio-research-agent-frontend](https://github.com/alpha5611331/portfolio-research-agent-frontend) |
 
 ---
 
@@ -24,15 +26,15 @@ A full-stack web application where a user submits a research question and a mult
 
 This project is designed to demonstrate the following skills simultaneously:
 
-| Domain          | Skills Demonstrated                                                              |
-| --------------- | -------------------------------------------------------------------------------- |
-| Agentic AI      | LangGraph StateGraph, multi-agent orchestration, tool use, streaming events      |
-| Backend         | FastAPI, async Python, WebSocket streaming, REST API design                      |
-| Frontend        | Next.js 14 App Router, TypeScript, real-time UI, state management                |
-| LLM integration | OpenAI SDK-compatible (OpenAI + Groq), prompt engineering, streaming             |
-| Search          | Tavily API (free tier), result ranking and deduplication                         |
-| UI/UX           | Unique dark command-center design, live agent trace visualization                |
-| DevOps          | Docker Compose, environment config,`.env` management                           |
+| Domain          | Skills Demonstrated                                                         |
+| --------------- | --------------------------------------------------------------------------- |
+| Agentic AI      | LangGraph StateGraph, multi-agent orchestration, tool use, streaming events |
+| Backend         | FastAPI, async Python, WebSocket streaming, REST API design                 |
+| Frontend        | Next.js 14 App Router, TypeScript, real-time UI, state management           |
+| LLM integration | OpenAI SDK-compatible (OpenAI + Groq), prompt engineering, streaming        |
+| Search          | Tavily API (free tier), result ranking and deduplication                    |
+| UI/UX           | Unique dark command-center design, live agent trace visualization           |
+| DevOps          | Docker Compose, environment config,`.env` management                      |
 
 ---
 
